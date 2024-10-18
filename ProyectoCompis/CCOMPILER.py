@@ -101,7 +101,7 @@ class ccompiler:
                             print(word + " econtrado en TOKENS")
                         elif(word in self.Csets.keys()):
                             print(word + " econtrado en SETS")
-                        elif(len(word.replace("'",'')) == 1):
+                        elif(len(word.replace("'",''))):
                             foundMatch = False
                             charset = ''
                             charset = self.Csets.get('charset').replace('chr(', '').replace(')', '')
@@ -125,5 +125,3 @@ class ccompiler:
             print("Todo correcto :D")
                 
                 
-                 
-                    
