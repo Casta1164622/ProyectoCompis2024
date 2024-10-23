@@ -17,7 +17,7 @@ for token in tokens:
     print(token.get_symbol(), token.get_value())
 
 #Cargar la tabla lalr (la gramatica está en el objeto compiler)
-grammar = compilador.getProductionsString()
+#grammar = compilador.getProductionsString()
 
 #creamos el diccionario
 diccionario = asign(grammar)

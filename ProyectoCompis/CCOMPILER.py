@@ -1,6 +1,5 @@
 ﻿from re import L, split
 import re
-import produccion
 class ccompiler:
     
     nombre = ""
@@ -8,7 +7,7 @@ class ccompiler:
     Csets = {}
     tokens = []
     keywords = []
-    productions = []
+    productions = {}
     productionNames = []
     
 
@@ -58,50 +57,41 @@ class ccompiler:
                             self.keywords.append(item)
                 elif(readingProductions):
                     if "PRODUCTIONS" not in line:
-                        readingList = line.replace('\t','').replace(';\n','').split('=')
-                        newProduction = produccion.produccion(readingList[0].replace(' ',''))
-                        self.productionNames.append(readingList[0].replace(' ',''))
-                        readingList = readingList[1].replace('\n','').split('|')
-                        for item in readingList:
-                            if('{' in item):
-                                NewreadingList = item.split('{')
-                                newProduction.producciones.append(NewreadingList[0])
-                                
-                                NewreadingList = NewreadingList[1].replace('}','').split(',')
-                                for action in NewreadingList:
-                                    newProduction.actions.append(action)
 
-                            else:
-                                if('Îµ' in item):
-                                    newProduction.producciones.append('ε')
-                                else:
-                                    newProduction.producciones.append(item)
-                        self.productions.append(newProduction)
+                        # Regular expression to match the first '=' and split by it
+                        # Split each line at the first '='
+                        lhs, rhs = re.split(r'\s*=\s*', line, maxsplit=1)
+                        
+                        self.productionNames.append(lhs.strip('\t'))
+    
+                            # Split the right-hand side by '|' and strip spaces
+                        rhs_options = [option.strip() for option in rhs.split('|')]
+    
+                            # Add to the dictionary
+                        self.productions[lhs.strip()] = rhs_options
     
     def checkCompiler(self):
         failed = False
         wordList = []
         for prodItem in self.productions:
-            for producionItem in prodItem.producciones:
-                wordList = producionItem.split()
-                for word in wordList:
-                    word = word
-                    if('<' in word and '>' in word):
-                        if(word in self.productionNames):
-                            print(word+' Cuenta con una produccion \n')
+            for values in self.productions[prodItem]:
+                for producionItem in values.split(' '):
+                    if('<' in producionItem and '>' in producionItem and not producionItem == "'<>'"):
+                        if(producionItem in self.productionNames):
+                            print(producionItem+' Cuenta con una produccion \n')
                         else:
-                            print("ERROR: El no terminal "+word+" no cuenta con una definicion \n")
+                            print("ERROR: El no terminal "+producionItem+" no cuenta con una definicion \n")
                             failed = True
                     else:
-                        if(word in 'ε'):
+                        if(producionItem in 'ε'):
                             print('ε')
-                        elif(word in self.keywords):
-                            print(word + " encontrado en KEYWORDS")
-                        elif(word in '\t'.join(self.tokens)):
-                            print(word + " econtrado en TOKENS")
-                        elif(word in self.Csets.keys()):
-                            print(word + " econtrado en SETS")
-                        elif(len(word.replace("'",''))):
+                        elif(producionItem in self.keywords):
+                            print(producionItem + " encontrado en KEYWORDS")
+                        elif(producionItem in '\t'.join(self.tokens)):
+                            print(producionItem + " econtrado en TOKENS")
+                        elif(producionItem in self.Csets.keys()):
+                            print(producionItem + " econtrado en SETS")
+                        elif(len(producionItem.replace("'",''))):
                             foundMatch = False
                             charset = ''
                             charset = self.Csets.get('charset').replace('chr(', '').replace(')', '')
@@ -109,15 +99,15 @@ class ccompiler:
                             start, end = [c for c in charset.split('..')]
                             pattern = f'[{chr(int(start))}-{chr(int(end))}]'
 
-                            if(re.match(pattern, word)):
+                            if(re.match(pattern, producionItem)):
                                 foundMatch = True
-                                print(word+" encontrado en el rango del charset")
+                                print(producionItem+" encontrado en el rango del charset")
 
                             if(not foundMatch):
-                                print("ERROR: el terminal "+word+" no esta definido o en un rango de charset")
+                                print("ERROR: el terminal "+producionItem+" no esta definido o en un rango de charset")
                                 failed = True
                         else:
-                            print("ERROR: el terminal "+word+" no esta definido")
+                            print("ERROR: el terminal "+producionItem+" no esta definido")
                             failed = True
         if(failed):
             print("El chequeo falló :o")
@@ -127,11 +117,6 @@ class ccompiler:
     def getProductionsString(self):
         productions_str = ""
         for prod in self.productions:
-        # Usamos un solo espacio después de "->"
-            prod_str = f"{prod.nombre} ->{'|'.join(prod.producciones)}"
-        # Reemplazamos "|ε" por "| ε" para que ε no esté pegado al "|"
-            prod_str = prod_str.replace('|ε', '| ε')
-            productions_str += prod_str + '\n'
-        return productions_str
+            return self.productions[prod]
 
 
