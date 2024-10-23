@@ -124,4 +124,14 @@ class ccompiler:
         else:
             print("Todo correcto :D")
                 
-                
+    def getProductionsString(self):
+        productions_str = ""
+        for prod in self.productions:
+        # Usamos un solo espacio después de "->"
+            prod_str = f"{prod.nombre} ->{'|'.join(prod.producciones)}"
+        # Reemplazamos "|ε" por "| ε" para que ε no esté pegado al "|"
+            prod_str = prod_str.replace('|ε', '| ε')
+            productions_str += prod_str + '\n'
+        return productions_str
+
+
