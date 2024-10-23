@@ -3,6 +3,7 @@ def asign(cadena):
     asignaciones = {}
     
     asignaciones['ε'] = 'e'
+    asignaciones['Îµ'] = 'e'
 
     # Letras para no terminales (mayúsculas) y terminales (minúsculas)
     letras_mayus = iter([chr(i) for i in range(ord('A'), ord('Z') + 1)])

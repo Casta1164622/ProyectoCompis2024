@@ -76,3 +76,9 @@ def display_parse_table(parse_table, term, non_term):
                 else:
                     row += '{:<12}'.format('')
             file.write(row + '\n')
+
+def leer_input_txt_como_string():
+    ruta_archivo = 'input.txt'
+    with open(ruta_archivo, 'r', encoding='utf-8') as archivo:
+        contenido = archivo.read().replace('\n', ' ')
+    return contenido

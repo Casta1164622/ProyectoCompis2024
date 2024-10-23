@@ -9,7 +9,6 @@ def term_and_nonterm(grammar, term, non_term):
             non_term.append(prod[0])
         
         for char in prod[1]:
-            # Si el carácter no es una mayúscula y no está en los caracteres especiales
             if not char.isupper() and char not in special_chars:
                 if char not in term:
                     term.append(char)
@@ -69,7 +68,7 @@ def closure(I,augment_grammar,first,non_term):
                             rhs = 'e.'
                         else:
                             rhs = '.' + prod[1]
-                        la = []                                     #look ahead
+                        la = []
                         if cursor_pos < (len(item[1]) - 2):
                             Ba = item[1][cursor_pos+2]
                             for firs in first[Ba]:
@@ -83,7 +82,7 @@ def closure(I,augment_grammar,first,non_term):
                         else:
                             la = deepcopy(item[2])
 
-                        new_item = [next_char,rhs,la]               #structure of each item
+                        new_item = [next_char,rhs,la]
                         
                         if new_item not in I:
                             same_item_with_diff_la = False
@@ -141,7 +140,7 @@ def find_states(states,augment_grammar,first,term,non_term):
         new_state_added =False
         for I in states:
             for X in all_symb:
-                new_state = goto(I.state,X,augment_grammar,first,non_term)              #goto(I,X)
+                new_state = goto(I.state,X,augment_grammar,first,non_term)
                 if (new_state != [] ) and not isSame(states,new_state,I,X):
                     N = State(new_state)
                     I.update_goto(X,N)
@@ -182,7 +181,7 @@ def combine_states(lalr_states,states):
 
 
 
-def get_parse_table(parse_table,states,augmented_grammar):                      #here states -> lalr_states
+def get_parse_table(parse_table,states,augmented_grammar):
     ambiguous = False
     for index, I in enumerate(states):
         parse_table.append(I.actions)
@@ -192,10 +191,9 @@ def get_parse_table(parse_table,states,augmented_grammar):                      
                 prod_no = augmented_grammar.index([item[0],rhs_list[0]])
                 for la in item[2]:
                     if la in parse_table[index].keys():
-#                        print('Ambiguous grammar!!')
                         ambiguous = True
                     else:
                         parse_table[index][la] = -prod_no
 
     if ambiguous:
-        print("Ambiguous Grammar!!\n\nGiving priority to Shift over Reduce")
+        print("La gramática es ambigua")

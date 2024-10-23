@@ -114,9 +114,9 @@ class ccompiler:
         else:
             print("Todo correcto :D")
                 
-    def getProductionsString(self):
-        productions_str = ""
-        for prod in self.productions:
-            return self.productions[prod]
-
-
+    def generarProduccionesString(self):
+        producciones_str = ""
+        for lhs, rhs in self.productions.items():
+            rhs_str = ' | '.join(rhs)
+            producciones_str += f"{lhs} -> {rhs_str}\n"
+        return producciones_str
