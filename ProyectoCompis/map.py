@@ -69,3 +69,66 @@ def simplify_grammar(cadena, asignaciones):
     
     # Unir todas las líneas en una sola cadena con saltos de línea
     return "\n".join(nueva_cadena)
+
+def reverse_simplify_grammar(cadena, asignaciones):
+    """Reemplaza las definiciones en la cadena con sus palabras de origen según el diccionario de asignaciones."""
+    # Invertir el diccionario de asignaciones para buscar por valores
+    asignaciones_invertidas = {v: k for k, v in asignaciones.items()}
+    
+    # Separar la cadena en líneas
+    lineas = cadena.splitlines()
+    
+    nueva_cadena = []
+    
+    # Procesar cada línea
+    for linea in lineas:
+        partes = linea.split(" ")  # Separar la línea por espacios
+        nueva_linea = []
+        
+        # Procesar cada parte
+        for parte in partes:
+            # Si la parte está en el diccionario invertido, se reemplaza por la clave original
+            if parte in asignaciones_invertidas:
+                nueva_linea.append(asignaciones_invertidas[parte])
+            else:
+                nueva_linea.append(parte)  # Si no está, se deja igual
+        
+        # Unir las partes nuevamente en una línea
+        nueva_cadena.append(" ".join(nueva_linea))
+    
+    # Unir todas las líneas en una sola cadena con saltos de línea
+    return "\n".join(nueva_cadena)
+
+def reverse_simplify_grammar_list(cadenas, asignaciones):
+    """Reemplaza las definiciones en cada cadena de la lista con sus palabras de origen según el diccionario de asignaciones."""
+    # Invertir el diccionario de asignaciones para buscar por valores
+    asignaciones_invertidas = {v: k for k, v in asignaciones.items()}
+    
+    # Nueva lista para almacenar las cadenas procesadas
+    nuevas_cadenas = []
+    
+    # Procesar cada cadena en la lista
+    for cadena in cadenas:
+        lineas = cadena.splitlines()  # Separar la cadena en líneas
+        nueva_cadena = []
+        
+        # Procesar cada línea
+        for linea in lineas:
+            partes = linea.split(" ")  # Separar la línea por espacios
+            nueva_linea = []
+            
+            # Procesar cada parte
+            for parte in partes:
+                # Si la parte está en el diccionario invertido, se reemplaza por la clave original
+                if parte in asignaciones_invertidas:
+                    nueva_linea.append(asignaciones_invertidas[parte])
+                else:
+                    nueva_linea.append(parte)  # Si no está, se deja igual
+            
+            # Unir las partes nuevamente en una línea
+            nueva_cadena.append(" ".join(nueva_linea))
+        
+        # Unir todas las líneas de la cadena procesada en una sola cadena con saltos de línea
+        nuevas_cadenas.append("\n".join(nueva_cadena))
+    
+    return nuevas_cadenas

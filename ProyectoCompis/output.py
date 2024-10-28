@@ -1,5 +1,6 @@
 from state import State, lalrState
 from table import term_and_nonterm, calculate_first, get_augmented, find_states, combine_states, get_parse_table
+from map import reverse_simplify_grammar
 
 def read_grammar_from_string(grammar_string):
     """Lee la gramática desde una cadena y la devuelve en formato adecuado"""
@@ -51,8 +52,8 @@ def generate_lalr_table(grammar):
 
     return parse_table, term, non_term
 
-def display_parse_table(parse_table, term, non_term):
-    """Muestra la tabla LALR en un archivo de texto"""
+def display_parse_table(parse_table, term, non_term, asignaciones):
+    """Muestra la tabla LALR en un archivo de texto, aplicando reverse_simplify_grammar a cada línea."""
     all_symbols = term + ['$'] + non_term
     
     with open("tabla.txt", "w") as file:
@@ -75,10 +76,58 @@ def display_parse_table(parse_table, term, non_term):
                         row += '{:<12}'.format('accept')
                 else:
                     row += '{:<12}'.format('')
-            file.write(row + '\n')
+
+            # Aplicar reverse_simplify_grammar a la fila generada
+            row_simplified = reverse_simplify_grammar(row, asignaciones)
+            
+            # Escribir la fila en el archivo
+            file.write(row_simplified + '\n')
 
 def leer_input_txt_como_string():
     ruta_archivo = 'input.txt'
     with open(ruta_archivo, 'r', encoding='utf-8') as archivo:
         contenido = archivo.read().replace('\n', ' ')
     return contenido
+
+def generate_lalr_list(parse_table, term, non_term):
+    """
+    Genera una lista de strings en el formato:
+    "estado símbolo operación estado_destino" para cada entrada en la tabla LALR.
+    """
+    lalr_list = []
+    all_symbols = term + ['$'] + non_term  # Todos los símbolos en el orden terminales + '$' + no terminales
+
+    for state_index, state in enumerate(parse_table):
+        for symbol in all_symbols:
+            # Primero verificamos si es un no terminal para manejar GoTo
+            if symbol in non_term and symbol in state:
+                goto_state = state[symbol]
+                line = f"{state_index} {symbol} goto {goto_state}"
+                lalr_list.append(line)
+
+            # Si es un terminal o '$', manejamos shift, reduce, o accept
+            elif symbol in term + ['$']:
+                if symbol in state:
+                    action = state[symbol]
+                    if action > 0:
+                        operation = "shift"
+                        destination = action
+                    elif action < 0:
+                        operation = "reduce"
+                        destination = -action
+                    elif action == 0:
+                        operation = "accept"
+                        destination = ''
+                    else:
+                        continue  # Si no hay acción, se salta
+
+                    # Formateamos la salida según el tipo de operación
+                    if operation != "accept":
+                        line = f"{state_index} {symbol} {operation} {destination}"
+                    else:
+                        line = f"{state_index} {symbol} {operation}"
+
+                    lalr_list.append(line)
+                
+    return lalr_list
+

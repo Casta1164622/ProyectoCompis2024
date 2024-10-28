@@ -120,3 +120,11 @@ class ccompiler:
             rhs_str = ' | '.join(rhs)
             producciones_str += f"{lhs} -> {rhs_str}\n"
         return producciones_str
+    
+    def generarListaProducciones(self):
+        lista_producciones = []
+        for lhs, rhs in self.productions.items():
+            for opcion in rhs:
+                produccion = f"{lhs} {opcion}"
+                lista_producciones.append(produccion)
+        return lista_producciones

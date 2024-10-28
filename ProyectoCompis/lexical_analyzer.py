@@ -17,7 +17,7 @@ class GrammarSymbol:
 
 class Lexema(GrammarSymbol):
     def __init__(self, symbol: str, value: str):
-        super().__init__(GrammarSymbol.TERMINAL, symbol)
+        super().__init__(GrammarSymbol.TERMINAL, symbol if symbol == "$" else f"'{symbol}'")
         self.value: str = value
 
     def get_value(self) -> str:
