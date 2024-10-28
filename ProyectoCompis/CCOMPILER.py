@@ -111,9 +111,11 @@ class ccompiler:
                             failed = True
         if(failed):
             print("El chequeo falló :o")
+            return False
         else:
             print("Todo correcto :D")
-                
+            return True
+
     def generarProduccionesString(self):
         producciones_str = ""
         for lhs, rhs in self.productions.items():

@@ -148,7 +148,11 @@ class SyntaxAnalyzer:
     RESULT_ACCEPT = 0
     RESULT_FAILED = 1
 
-    def __init__(self):
+    def __init__(self, prods, lalrList):
+        global productionList
+        global Lalr
+        productionList = prods
+        Lalr = lalrList
         self.semanticAnalyzer = SemanticAnalyzer()
         self.productions = {}
         self.parsingTable = {}
@@ -193,8 +197,7 @@ class SyntaxAnalyzer:
             # Crear la operación y agregarla al estado en parsing_table
             self.parsingTable[state][symbol] = Operation(action, next_state)
 
-    def parsing(self, tokens: list):
-        # Inicializando la pila
+    def parsing(self, tokens):
         state0 = GrammarSymbol(GrammarSymbol.STATE, "0")
         self.parsingStack.append(state0)
         print("Inicializando: Estado inicial 0 en la pila.")
@@ -204,7 +207,6 @@ class SyntaxAnalyzer:
             token = tokens[i]
             print(f"Token actual: {token.get_symbol()} con valor {token.get_value()}")
 
-            # Si la cima de la pila es un estado
             if self.parsingStack[-1].type == GrammarSymbol.STATE:
                 state = int(self.parsingStack[-1].get_symbol())
                 to_do = self.parsingTable.get(state, {}).get(token.get_symbol(), None)
@@ -228,8 +230,8 @@ class SyntaxAnalyzer:
                             if symbol == "ε" or symbol == "Îµ":
                                 index -= 1
                             else:
-                                self.parsingStack.pop()  # Quita el estado
-                                stack_symbol = self.parsingStack.pop()  # Quita el símbolo
+                                self.parsingStack.pop()
+                                stack_symbol = self.parsingStack.pop()
 
                                 if stack_symbol.type == GrammarSymbol.TERMINAL and stack_symbol.get_symbol() == symbol:
                                     input_for_semantic_actions.append(stack_symbol)
@@ -290,9 +292,3 @@ class SyntaxAnalyzer:
 
         print("ACCEPT: El análisis fue exitoso.")
         return self.RESULT_ACCEPT
-    
-    def charge_prods_and_lalr(self, prods, lalrList):
-        global productionList
-        global Lalr
-        productionList = prods
-        Lalr = lalrList
