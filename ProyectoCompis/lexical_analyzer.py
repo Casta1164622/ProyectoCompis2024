@@ -53,7 +53,6 @@ class LexicalAnalyzer:
                     end = int(parts[1].replace("chr(", "").replace(")", ""))
                     begin_hex = f"{begin:02x}"
                     end_hex = f"{end:02x}"
-                    
                     return f"[\\x{begin_hex}-\\x{end_hex}]"
                 else:
                     return f"[{parts[0]}-{parts[1]}]"
@@ -144,7 +143,7 @@ class LexicalAnalyzer:
                         break
 
                 # Verificar si el token es un "str": comienza con cualquier cosa que no sea una "letter"
-                if re.match(r'[^\w]', word[index]) or not re.match(r'[^A-Za-z_]', word[0]):
+                if re.match(r'[^\w]', word[index]) or not re.match(self.token_patterns[1], word[0]):
                     tokens.append(Lexema("str", word))
                     matched = True
                     break
