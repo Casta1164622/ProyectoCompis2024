@@ -26,42 +26,51 @@ class Lexema(GrammarSymbol):
 class LexicalAnalyzer:
     def __init__(self, compiler):
         self.compiler = compiler
-        self.token_patterns = self.compile_token_patterns()
+        self.sets_patterns = self.compile_token_patterns()
+        self.token_patterns = self.convert_token_to_pattern()
+    
+    def convert_token_to_pattern(self):
+        patterns = []
+        number = self.compiler.tokens[0].split("=")[1].replace("digit", self.sets_patterns[0])
+        number = number.replace(" ", "")
+        patterns.append(number)
+        identifier = self.compiler.tokens[1].split("=")[1].replace("digit", self.sets_patterns[0])
+        identifier = identifier.replace("letter", self.sets_patterns[1])
+        identifier = identifier.replace("check", "")
+        identifier = identifier.replace(" ", "")
+        patterns.append(identifier)
+        return patterns
 
-    def convert_cset_to_regex(self, set_string: str) -> str:
-        """Convierte un conjunto definido en el compilador a una expresión regular."""
+    def convert_cset_to_regex(self, set_string: str) -> str:  # Convertimos los Csets en Regex
         set_string = set_string.replace("'", "")
+        set_string = set_string.replace("+", "")
+        
         if '..' in set_string:
             parts = set_string.split('..')
-            return f'[{parts[0]}-{parts[1]}]'
+            if len(parts) < 3:
+                if "chr" in parts[0] and "chr" in parts[1]:
+                    begin = int(parts[0].replace("chr(", "").replace(")", ""))
+                    end = int(parts[1].replace("chr(", "").replace(")", ""))
+                    begin_hex = f"{begin:02x}"
+                    end_hex = f"{end:02x}"
+                    
+                    return f"[\\x{begin_hex}-\\x{end_hex}]"
+                else:
+                    return f"[{parts[0]}-{parts[1]}]"
+            else:
+                return f"[{parts[0]}-{parts[1]}-{parts[2]}]"
+        
         return set_string
+
 
     def compile_token_patterns(self) -> List[re.Pattern]:
         patterns = []
-
-        # Convertir los conjuntos de caracteres desde el compilador
-        digit_set = self.convert_cset_to_regex(self.compiler.Csets.get('digit', '[0-9]'))
-        letter_set = self.convert_cset_to_regex(self.compiler.Csets.get('letter', '[A-Za-z_]'))
-        charset = self.convert_cset_to_regex(self.compiler.Csets.get('charset', '[\x20-\xFE]'))
-
-        # Procesar cada token en el compilador y generar su patrón regex
-        for token in self.compiler.tokens:
-            token = token.strip()
-
-            if "number" in token:
-                patterns.append((re.compile(digit_set + r'+'), 'number'))  # Uno o más dígitos
-            elif "identifier" in token:
-                # Definir identificadores: letra seguida de letras o dígitos
-                patterns.append((re.compile(letter_set + r'(?:' + letter_set + r'|' + digit_set + r')*'), 'identifier'))
-            elif "str" in token:
-                # Cadenas: conjunto de caracteres seguidos de más conjuntos de caracteres
-                patterns.append((re.compile(charset + r'+'), 'str'))
-            else:
-                # Para operadores, símbolos y tokens restantes
-                operator_tokens = re.findall(r"'.+?'", token)  # Capturar operadores dentro de comillas simples
-                for op in operator_tokens:
-                    op_clean = op.replace("'", "")  # Limpiar comillas
-                    patterns.append((re.compile(re.escape(op_clean)), op_clean))  # Escapar el operador
+        digit_set = self.convert_cset_to_regex(self.compiler.Csets.get('digit'))
+        patterns.append(digit_set)
+        letter_set = self.convert_cset_to_regex(self.compiler.Csets.get('letter'))
+        patterns.append(letter_set)
+        charset = self.convert_cset_to_regex(self.compiler.Csets.get('charset'))
+        patterns.append(charset)
 
         return patterns
 
@@ -110,8 +119,8 @@ class LexicalAnalyzer:
                     continue
 
                 # Verificar si el token es un "identifier": empieza con una "letter"
-                if re.match(r'[A-Za-z_]', word[index]):
-                    identifier_match = re.match(r'[A-Za-z_][A-Za-z0-9_]*', word[index:])
+                if re.match(self.sets_patterns[1], word[index]):
+                    identifier_match = re.match(self.token_patterns[1], word[index:])
                     if identifier_match:
                         tokens.append(Lexema("identifier", identifier_match.group()))
                         index += len(identifier_match.group())
@@ -119,11 +128,11 @@ class LexicalAnalyzer:
                         continue
 
                 # Verificar si el token es un "number": comienza con un dígito
-                if re.match(r'[0-9]', word[index]):
-                    number_match = re.match(r'[0-9]+', word[index:])
+                if re.match(self.sets_patterns[0], word[index]):
+                    number_match = re.match(self.token_patterns[0], word[index:])
                     # Si el número no está seguido de una letra, es un número válido
                     remaining_input = word[index + len(number_match.group()):]
-                    if not remaining_input or not re.match(r'[A-Za-z_]', remaining_input[0]):
+                    if not remaining_input or not re.match(self.sets_patterns[1], remaining_input[0]):
                         tokens.append(Lexema("number", number_match.group()))
                         index += len(number_match.group())
                         matched = True
@@ -135,7 +144,7 @@ class LexicalAnalyzer:
                         break
 
                 # Verificar si el token es un "str": comienza con cualquier cosa que no sea una "letter"
-                if re.match(r'[^\w]', word[index]) or re.match(r'[^A-Za-z_]', word[0]):
+                if re.match(r'[^\w]', word[index]) or not re.match(r'[^A-Za-z_]', word[0]):
                     tokens.append(Lexema("str", word))
                     matched = True
                     break

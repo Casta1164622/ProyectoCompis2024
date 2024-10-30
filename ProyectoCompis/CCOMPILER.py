@@ -116,17 +116,17 @@ class ccompiler:
             print("Todo correcto :D")
             return True
 
-    def generarProduccionesString(self):
-        producciones_str = ""
+    def productionsTostring(self):
+        productions_str = ""
         for lhs, rhs in self.productions.items():
             rhs_str = ' | '.join(rhs)
-            producciones_str += f"{lhs} -> {rhs_str}\n"
-        return producciones_str
+            productions_str += f"{lhs} -> {rhs_str}\n"
+        return productions_str
     
-    def generarListaProducciones(self):
-        lista_producciones = []
+    def Production_list(self):
+        production_list = []
         for lhs, rhs in self.productions.items():
             for opcion in rhs:
                 produccion = f"{lhs} {opcion}"
-                lista_producciones.append(produccion)
-        return lista_producciones
+                production_list.append(produccion)
+        return production_list

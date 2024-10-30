@@ -18,7 +18,7 @@ if compilador.checkCompiler():
     tokens = lexer.get_lexical_tokens(leer_input_txt_como_string())
 
     #Cargar la tabla lalr (la gramatica está en el objeto compiler)
-    grammarString = compilador.generarProduccionesString()
+    grammarString = compilador.productionsTostring()
 
     #creamos el diccionario
     diccionario = asign(grammarString)
@@ -34,7 +34,7 @@ if compilador.checkCompiler():
         # Mostrar la tabla LALR en el txt
         display_parse_table(parse_table, term, non_term, diccionario)
         #Generar las producciones para que sean cargadas en la tabla del analizador sintáctico
-        productions = compilador.generarListaProducciones()
+        productions = compilador.Production_list()
         #Se generan los estados de la lalr (la que está en el txt) para que sean cargados por el analizador sintáctico
         lalr = generate_lalr_list(parse_table, term, non_term)
         #Se "desimplifica" la gramatica, ya que eso se usó nada mas para crear los estados y la lalr por lo que para que pueda ser cargado por el analizador sintáctico se le mandan como son o sea sin simplificar
