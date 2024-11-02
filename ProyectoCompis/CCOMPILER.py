@@ -8,6 +8,7 @@ class ccompiler:
     tokens = []
     keywords = []
     productions = {}
+    actions = {}
     productionNames = []
     
 
@@ -58,17 +59,17 @@ class ccompiler:
                 elif(readingProductions):
                     if "PRODUCTIONS" not in line:
 
-                        # Regular expression to match the first '=' and split by it
-                        # Split each line at the first '='
-                        lhs, rhs = re.split(r'\s*=\s*', line, maxsplit=1)
-                        
-                        self.productionNames.append(lhs.strip('\t'))
-    
+                        left_side = re.match(r"^(.*?)(?==)", line).group().strip()   # Left side before '='
+                        middle_side = re.search(r"=(.*?)(?={)", line).group(1).strip()  # Middle part between '=' and '{'
+                        right_side = re.search(r"{.*}", line).group().strip('{').strip('}')       # Right side with '{'
+
                             # Split the right-hand side by '|' and strip spaces
-                        rhs_options = [option.strip() for option in rhs.split('|')]
-    
-                            # Add to the dictionary
-                        self.productions[lhs.strip()] = rhs_options
+                        middle_options = [option.strip() for option in middle_side.split('|')]
+                        right_options = [option.strip() for option in right_side.split(',')]
+                            # Add to actios
+                        self.actions[left_side.strip()] = right_options
+                            # Add to productions
+                        self.productions[left_side.strip()] = middle_options
     
     def checkCompiler(self):
         failed = False
