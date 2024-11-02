@@ -66,10 +66,13 @@ class ccompiler:
                             # Split the right-hand side by '|' and strip spaces
                         middle_options = [option.strip() for option in middle_side.split('|')]
                         right_options = [option.strip() for option in right_side.split(',')]
+                        
+                        self.productionNames.append(left_side.strip())
                             # Add to actios
                         self.actions[left_side.strip()] = right_options
                             # Add to productions
                         self.productions[left_side.strip()] = middle_options
+                        
     
     def checkCompiler(self):
         failed = False
