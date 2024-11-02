@@ -39,8 +39,10 @@ if compilador.checkCompiler():
         lalr = generate_lalr_list(parse_table, term, non_term)
         #Se "desimplifica" la gramatica, ya que eso se usó nada mas para crear los estados y la lalr por lo que para que pueda ser cargado por el analizador sintáctico se le mandan como son o sea sin simplificar
         lalr = reverse_simplify_grammar_list(lalr, diccionario)
+        #Mandamos a traer las actions
+        actions = compilador.getFlattenedActionsList();
         #Se crea la instancia del analizador sintactico, mandandole las producciones y los estados de la lalr
-        syntaxAn = SyntaxAnalyzer(productions, lalr)
+        syntaxAn = SyntaxAnalyzer(productions, lalr, actions)
         #Se parsea el input (el método de parsing imprime si se acepta o si no)
         syntaxAn.parsing(tokens)
     else:

@@ -134,3 +134,10 @@ class ccompiler:
                 produccion = f"{lhs} {opcion}"
                 production_list.append(produccion)
         return production_list
+    
+    def getFlattenedActionsList(self):
+        flattened_actions = []
+        for production in self.productionNames:
+            if production in self.actions:
+                flattened_actions.extend(self.actions[production])
+        return flattened_actions
