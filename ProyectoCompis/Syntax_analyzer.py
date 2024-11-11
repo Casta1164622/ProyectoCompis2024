@@ -1,18 +1,25 @@
 from lexical_analyzer import GrammarSymbol
+from lexical_analyzer import Lexema
 
 productionList = []
 Lalr = []
 ActionList = []
+rutaOutput = ""
+currentTemp = 0
 
 class NonTerminalSymbol(GrammarSymbol):
     NONTERMINAL = 1
 
-    def __init__(self, symbol):
+    def __init__(self, symbol, value=None):
         super().__init__(self.NONTERMINAL)
         self.set_symbol(symbol)
+        self.value = value
 
     def set_symbol(self, symbol):
         self.symbol = symbol
+    
+    def get_value(self) -> str:
+        return self.value
 
 class Operation:
     SHIFT = 0
@@ -76,115 +83,179 @@ import os
 class SemanticAnalyzer:
     def __init__(self):
         self.symbols_table = {}
-        self.declarations = []
+        self.temps = []
 
     def execute_operation(self, operation, lexemas, symbol):
         if operation == "start_program":
-            print("Acción: start_program")
+            symbol.value = f'class {lexemas[3].get_value()} ' + "{" + f'{lexemas[1].get_value()}' + " }"
+            print(f"program loaded with value: {symbol.value}")
+            self.escribir_en_archivo(symbol.value)
         elif operation == "execute_block":
-            print("Acción: execute_block")
+            if lexemas[1].get_value() is None:
+                symbol.value = f'{lexemas[0].get_value()}'
+            else:
+                symbol.value = f'{lexemas[1].get_value()} {lexemas[0].get_value()}'
+            print(f"Block loaded with value: {symbol.value}")
         elif operation == "handle_declarations":
-            print("Acción: handle_declarations")
+            if lexemas[0].get_value() is None:
+                symbol.value = f'{lexemas[1].get_value()}'
+            else:
+                symbol.value = f'{lexemas[1].get_value()} {lexemas[0].get_value()}'
+            print(f"declarations loaded with value: {symbol.value}")
         elif operation == "declare_variable":
-            print("Acción: declare_variable")
-        elif operation == "declare_procedure":
-            print("Acción: declare_procedure")
-        elif operation == "declare_parameter":
-            print("Acción: declare_parameter")
-        elif operation == "declare_parameter_ext":
-            print("Acción: declare_parameter_ext")
+            if lexemas[0].get_value() is None:
+                symbol.value = f'static {lexemas[2].get_value()} {lexemas[4].get_value()};'
+            else:
+                symbol.value = f'static {lexemas[2].get_value()} {lexemas[4].get_value()}; {lexemas[0].get_value()}'
+            print(f"variable declaration loaded with value: {symbol.value}")
         elif operation == "set_type_int":
-            print("Acción: set_type_int")
+            symbol.value = "int"
+            print("Tipo establecido a int")
         elif operation == "set_type_double":
-            print("Acción: set_type_double")
+            symbol.value = "double"
+            print("Tipo establecido a double")
         elif operation == "set_type_bool":
-            print("Acción: set_type_bool")
+            symbol.value = "bool"
+            print("Tipo establecido a bool")
         elif operation == "set_type_string":
-            print("Acción: set_type_string")
+            symbol.value = "string"
+            print("Tipo establecido a string")
         elif operation == "begin_compound_statement":
-            print("Acción: begin_compound_statement")
+            symbol.value = 'static void Main(string[] args){ ' + f'{lexemas[1].get_value()}' + " }"
+            print(f"Compound statement loaded with value: {symbol.value}")
         elif operation == "add_statement":
-            print("Acción: add_statement")
+            symbol.value = lexemas[0].get_value()
+            print(f"statement loaded with value: {symbol.value}")
         elif operation == "add_statements":
-            print("Acción: add_statements")
+            if lexemas[0].get_value() is None:
+                symbol.value = lexemas[1].get_value()
+            else:
+                symbol.value = f'{lexemas[1].get_value()} {lexemas[0].get_value()}'
+                print(f"statement loaded with value: {symbol.value}")
         elif operation == "add_statement_ext":
-            print("Acción: add_statement_ext")
+            if lexemas[0].get_value() is None:
+                symbol.value = lexemas[1].get_value()
+            else:
+                symbol.value = f'{lexemas[1].get_value()} {lexemas[0].get_value()}'
+                print(f"statement loaded with value: {symbol.value}")
         elif operation == "handle_assignment":
-            print("Acción: handle_assignment")
+            symbol.value = f'{lexemas[0].get_value()}'
+            print(f"Statement loaded with value: {symbol.value}")
         elif operation == "handle_if_statement":
-            print("Acción: handle_if_statement")
+            symbol.value = f'{lexemas[0].get_value()}'
+            print(f"Statement loaded with value: {symbol.value}")
         elif operation == "handle_while_statement":
             print("Acción: handle_while_statement")
         elif operation == "handle_procedure_call":
             print("Acción: handle_procedure_call")
         elif operation == "handle_io_statement":
-            print("Acción: handle_io_statement")
+            symbol.value = f'{lexemas[0].get_value()}'
+            print(f"Statement loaded with value: {symbol.value}")
         elif operation == "assign_value":
-            print("Acción: assign_value")
+            symbol.value = f'{lexemas[2].get_value()} = {lexemas[0].get_value()};'
+            print(f"Assignment loaded with value: {symbol.value}")
         elif operation == "execute_if":
-            print("Acción: execute_if")
+            if lexemas[0].get_value() is None:
+                symbol.value = "if (" + f'{lexemas[3].get_value()}' + " ) {" + f'{lexemas[1].get_value()}' + " }"
+            else:
+                symbol.value = "if (" + f'{lexemas[3].get_value()}' + " ) {" + f'{lexemas[1].get_value()}' + "}" + f'{lexemas[0].get_value()}'
+            print(f"else loaded with value: {symbol.value}")
         elif operation == "execute_else":
-            print("Acción: execute_else")
-        elif operation == "execute_while":
-            print("Acción: execute_while")
-        elif operation == "call_procedure":
-            print("Acción: call_procedure")
-        elif operation == "handle_argument":
-            print("Acción: handle_argument")
-        elif operation == "handle_argument_ext":
-            print("Acción: handle_argument_ext")
+            symbol.value = "else { " + f'{lexemas[0].get_value()}' + " }"
+            print(f"else loaded with value: {symbol.value}")
         elif operation == "execute_println":
-            print("Acción: execute_println")
+            symbol.value = f'Console.WriteLine({lexemas[1].get_value()});'
+            print(f"PRINTLN loaded with value: {symbol.value}")
         elif operation == "execute_readln":
-            print("Acción: execute_readln")
+            symbol.value = f'{lexemas[1].get_value()} = Console.ReadLine();'
+            print(f"READLN loaded with value: {symbol.value}")
         elif operation == "evaluate_expression":
-            print("Acción: evaluate_expression")
+            if lexemas[0].get_value() is None:
+                symbol.value = f'{lexemas[1].get_value()}'
+                print(f"expression loaded with value: {symbol.value}")
+            else:
+                symbol.value = f'{lexemas[1].get_value()} {lexemas[0].get_value()}'
+                print(f"expression loaded with value: {symbol.value}")
         elif operation == "evaluate_relational_expression":
-            print("Acción: evaluate_relational_expression")
+            symbol.value = f'{lexemas[1].get_value()} {lexemas[0].get_value()}'
+            print(f"relational with value: {symbol.value}")
         elif operation == "evaluate_simple_expression":
-            print("Acción: evaluate_simple_expression")
+            symbol.value = f'{lexemas[2].get_value()} {lexemas[1].get_value()} {lexemas[0].get_value()}'
+            print(f"simple expression loaded with value: {symbol.value}")
+        elif operation == "evaluate_agruped_expression":
+            symbol.value = f'({lexemas[1].get_value()})'
+            print(f"agruped expression loaded with value: {symbol.value}")
         elif operation == "evaluate_term":
-            print("Acción: evaluate_term")
-        elif operation == "load_identifier":
-            print("Acción: load_identifier")
-        elif operation == "load_number":
-            print("Acción: load_number")
+            symbol.value = f'{lexemas[2].get_value()} {lexemas[1].get_value()} {lexemas[0].get_value()}'
+            print(f"term loaded with value: {symbol.value}")
         elif operation == "load_boolean_constant":
-            print("Acción: load_boolean_constant")
-        elif operation == "load_string_constant":
-            print("Acción: load_string_constant")
+            symbol.value = f'{lexemas[0].get_value()}'
+            print(f"boolean constant loaded with value: {symbol.value}")
+        elif operation == "load_identifier":
+            symbol.value = f'{lexemas[0].get_value()}'
+            print(f"identifier loaded with value: {symbol.value}")
+        elif operation == "load_number":
+            symbol.value = f'{lexemas[0].get_value()}'
+            print(f"number loaded with value: {symbol.value}")
+        elif operation == "load_constant":
+                print("Acción: load_constant")
         elif operation == "set_relational_equals":
-            print("Acción: set_relational_equals")
+            symbol.value = "=="
+            print("Relational operator set to '=='")
         elif operation == "set_relational_not_equals":
-            print("Acción: set_relational_not_equals")
+            symbol.value = "!="
+            print("Relational operator set to '!='")
         elif operation == "set_relational_less":
-            print("Acción: set_relational_less")
+            symbol.value = "<"
+            print("Relational operator set to '<'")
         elif operation == "set_relational_less_equals":
-            print("Acción: set_relational_less_equals")
+            symbol.value = "<="
+            print("Relational operator set to '<='")
         elif operation == "set_relational_greater":
-            print("Acción: set_relational_greater")
+            symbol.value = ">"
+            print("Relational operator set to '>'")
         elif operation == "set_relational_greater_equals":
-            print("Acción: set_relational_greater_equals")
+            symbol.value = ">="
+            print("Relational operator set to '>='")
         elif operation == "set_addition":
-            print("Acción: set_addition")
+            symbol.value = "+"
+            print("Additive operator set to '+'")
         elif operation == "set_subtraction":
-            print("Acción: set_subtraction")
+            symbol.value = "-"
+            print("Additive operator set to '-'")
         elif operation == "set_logical_or":
-            print("Acción: set_logical_or")
+            symbol.value = "||"
+            print("Logical OR set to '||'")
         elif operation == "set_multiplication":
-            print("Acción: set_multiplication")
+            symbol.value = "*"
+            print("Multiplicative operator set to '*'")
         elif operation == "set_division":
-            print("Acción: set_division")
+            symbol.value = "/"
+            print("Multiplicative operator set to '/'")
         elif operation == "set_logical_and":
-            print("Acción: set_logical_and")
+            symbol.value = "&&"
+            print("Logical AND set to '&&'")
         elif operation == "load_true":
-            print("Acción: load_true")
+            symbol.value = "true"
+            print("Boolean constant set to 'true'")
         elif operation == "load_false":
-            print("Acción: load_false")
+            symbol.value = "false"
+            print("Boolean constant set to 'false'")
         elif operation == "load_string":
-            print("Acción: load_string")
+            symbol.value = f'"{lexemas[1].get_value()}"'
+            print(f"String constant loaded with value: {symbol.value}")
         else:
             print("Operación no reconocida.")
+
+    def escribir_en_archivo(self, contenido):
+        global rutaOutput
+        ruta = rutaOutput
+        try:
+            with open(ruta, 'w', encoding='utf-8') as archivo:
+                archivo.write(contenido)
+            print("El contenido se ha escrito correctamente en el archivo.")
+        except Exception as e:
+            print(f"Ocurrió un error al escribir en el archivo: {e}")
 
 
 class SymbolItem:
@@ -255,13 +326,15 @@ class SyntaxAnalyzer:
     RESULT_ACCEPT = 0
     RESULT_FAILED = 1
 
-    def __init__(self, prods, lalrList, actions):
+    def __init__(self, prods, lalrList, actions, ruta):
         global productionList
         global Lalr
         global ActionList
+        global rutaOutput
         ActionList = actions
         productionList = prods
         Lalr = lalrList
+        rutaOutput = ruta
         self.semanticAnalyzer = SemanticAnalyzer()
         self.productions = {}
         self.parsingTable = {}

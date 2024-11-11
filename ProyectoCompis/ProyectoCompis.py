@@ -6,14 +6,16 @@ from output import read_grammar_from_string, leer_input_txt_como_string, generat
 from Syntax_analyzer import SyntaxAnalyzer
 
 #Se solicita la ruta donde esté el txt con la información de la gramatica, los tokens, etc.
-direccion = input("Ingrese ruta del archivo:\n") # En mi caso la ruta de mi txt es: C:\compil.txt
+direccion = input("Ingrese ruta del archivo:\n") #En mi caso la ruta de mi txt es: C:\compil.txt
 #Se crea la instancia del objeto compilador (Fase 1)
 compilador = CCOMPILER.ccompiler(direccion)
 # Cargar el compilador
 compilador.loadCompiler()
 
 if compilador.checkCompiler():
-    # Inicializar el analizador léxico
+    #pedimos una ruta para el output
+    ruta = input("Ingrese ruta del archivo de salida:\n") #En mi caso es: C:\Users\izeac\OneDrive\Escritorio\Nueva carpeta (2)\prueba\Program.cs
+    # Inicializar el analizador léxico (fase 2)
     lexer = LexicalAnalyzer(compilador)
     tokens = lexer.get_lexical_tokens(leer_input_txt_como_string())
 
@@ -42,8 +44,8 @@ if compilador.checkCompiler():
         #Mandamos a traer las actions
         actions = compilador.getFlattenedActionsList();
         #Se crea la instancia del analizador sintactico, mandandole las producciones y los estados de la lalr
-        syntaxAn = SyntaxAnalyzer(productions, lalr, actions)
-        #Se parsea el input (el método de parsing imprime si se acepta o si no)
+        syntaxAn = SyntaxAnalyzer(productions, lalr, actions, ruta)
+        #Se parsea el input (el método de parsing imprime si se acepta o si no) y luego escribe el código en C# donde se le indicó (fase 3)
         syntaxAn.parsing(tokens)
     else:
         #Si algo sale mal con la gramatica se imprime que hubo un error en la gramatica

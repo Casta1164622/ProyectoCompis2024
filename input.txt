@@ -1,12 +1,14 @@
 PROGRAM prueba ;
 
 VAR variable1 : INTEGER ;
-VAR variable2 : INTEGER ;
+VAR variable2 : STRING ;
 
 BEGIN
-variable1 := 5 * 4 + 3 * 5 ;
-READLN ( variable1 ) ;
+variable1 := ( 3 * 7 - 8 / 3 ) / 4 + 3 * 5 ;
 READLN ( variable2 ) ;
-IF TRUE AND FALSE OR TRUE AND TRUE THEN READLN ( variable1 ) ELSE READLN ( variable2 )
+PRINTLN ( " #Hola_mundo " ) ;
+PRINTLN ( variable1 ) ;
+IF TRUE AND FALSE OR TRUE AND TRUE THEN READLN ( variable1 ) ELSE READLN ( variable2 ) ;
+PRINTLN ( 4 )
 END
 .
