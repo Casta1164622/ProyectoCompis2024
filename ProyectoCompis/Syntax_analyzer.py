@@ -1,3 +1,4 @@
+import re
 from lexical_analyzer import GrammarSymbol
 from lexical_analyzer import Lexema
 
@@ -78,16 +79,15 @@ class Production:
         for action in actions:
             self.actions.append(action)
 
-import os
-
 class SemanticAnalyzer:
+    global currentTemp
     def __init__(self):
         self.symbols_table = {}
         self.temps = []
-
+        self.current = currentTemp
     def execute_operation(self, operation, lexemas, symbol):
         if operation == "start_program":
-            symbol.value = f'class {lexemas[3].get_value()} ' + "{" + f'{lexemas[1].get_value()}' + " }"
+            symbol.value = f'class {lexemas[3].get_value()} ' + "{" + f'{lexemas[1].get_value()}' + " } "
             print(f"program loaded with value: {symbol.value}")
             self.escribir_en_archivo(symbol.value)
         elif operation == "execute_block":
@@ -144,10 +144,6 @@ class SemanticAnalyzer:
         elif operation == "handle_if_statement":
             symbol.value = f'{lexemas[0].get_value()}'
             print(f"Statement loaded with value: {symbol.value}")
-        elif operation == "handle_while_statement":
-            print("Acción: handle_while_statement")
-        elif operation == "handle_procedure_call":
-            print("Acción: handle_procedure_call")
         elif operation == "handle_io_statement":
             symbol.value = f'{lexemas[0].get_value()}'
             print(f"Statement loaded with value: {symbol.value}")
@@ -156,9 +152,9 @@ class SemanticAnalyzer:
             print(f"Assignment loaded with value: {symbol.value}")
         elif operation == "execute_if":
             if lexemas[0].get_value() is None:
-                symbol.value = "if (" + f'{lexemas[3].get_value()}' + " ) {" + f'{lexemas[1].get_value()}' + " }"
+                symbol.value = "if (" + f'{lexemas[3].get_value()}' + ") { " + f'{lexemas[1].get_value()}' + " } "
             else:
-                symbol.value = "if (" + f'{lexemas[3].get_value()}' + " ) {" + f'{lexemas[1].get_value()}' + "}" + f'{lexemas[0].get_value()}'
+                symbol.value = "if (" + f'{lexemas[3].get_value()}' + ") { " + f'{lexemas[1].get_value()}' + " }" + f'{lexemas[0].get_value()}'
             print(f"else loaded with value: {symbol.value}")
         elif operation == "execute_else":
             symbol.value = "else { " + f'{lexemas[0].get_value()}' + " }"
@@ -180,14 +176,19 @@ class SemanticAnalyzer:
             symbol.value = f'{lexemas[1].get_value()} {lexemas[0].get_value()}'
             print(f"relational with value: {symbol.value}")
         elif operation == "evaluate_simple_expression":
-            symbol.value = f'{lexemas[2].get_value()} {lexemas[1].get_value()} {lexemas[0].get_value()}'
+            term = f'var temp{self.current} = temp{self.current - 2} {lexemas[1].get_value()} temp{self.current - 1};'
+            self.temps.append(term)
+            symbol.value = f'temp{self.current}'
             print(f"simple expression loaded with value: {symbol.value}")
+            self.current = self.current + 1
         elif operation == "evaluate_agruped_expression":
             symbol.value = f'({lexemas[1].get_value()})'
             print(f"agruped expression loaded with value: {symbol.value}")
         elif operation == "evaluate_term":
-            symbol.value = f'{lexemas[2].get_value()} {lexemas[1].get_value()} {lexemas[0].get_value()}'
-            print(f"term loaded with value: {symbol.value}")
+            term = f'var temp{self.current} = {lexemas[2].get_value()} {lexemas[1].get_value()} {lexemas[0].get_value()};'
+            self.temps.append(term)
+            self.current = self.current + 1
+            print(f"term loaded with value: " + term)
         elif operation == "load_boolean_constant":
             symbol.value = f'{lexemas[0].get_value()}'
             print(f"boolean constant loaded with value: {symbol.value}")
@@ -250,12 +251,38 @@ class SemanticAnalyzer:
     def escribir_en_archivo(self, contenido):
         global rutaOutput
         ruta = rutaOutput
+        newCont = contenido.replace(" }", "\n}\n")
+        newCont = newCont.replace("{ ", "\n{\n")
+        newCont = newCont.replace("; ", ";\n")
+        newCont = newCont.replace(" {", "\n{\n")
+        newCont = newCont.replace("\n\n", "\n")
+        newCont = self.contiene_temp(newCont)
         try:
             with open(ruta, 'w', encoding='utf-8') as archivo:
-                archivo.write(contenido)
+                archivo.write(newCont)
             print("El contenido se ha escrito correctamente en el archivo.")
         except Exception as e:
             print(f"Ocurrió un error al escribir en el archivo: {e}")
+
+    def contiene_temp(self, cadena):
+        renglones = cadena.split("\n")
+        patron = r"temp\d+"
+        salidaConTemps = ""
+        inicio = 0
+        fin = 0
+        for renglon in renglones:
+            coincidencia = re.search(patron, renglon)
+            if coincidencia:
+                for i, element in enumerate(self.temps):
+                    if f'var {coincidencia.group()}' in element:
+                        fin = i + 1
+                for elemento in self.temps[inicio:fin]:
+                    salidaConTemps = salidaConTemps + elemento + "\n"
+                salidaConTemps = salidaConTemps + renglon + "\n"
+                inicio = fin
+            else:
+                salidaConTemps = salidaConTemps + renglon + "\n"
+        return salidaConTemps
 
 
 class SymbolItem:
